@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.QiyeYuyueDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.qiye_yuyue_uuid_number as qiyeYuyueUuidNumber
+        ,a.qiye_id as qiyeId
+        ,a.qiye_yuyue_text as qiyeYuyueText
+        ,a.qiye_yuyue_photo as qiyeYuyuePhoto
+        ,a.qiye_yuyue_yesno_types as qiyeYuyueYesnoTypes
+        ,a.qiye_yuyue_yesno_text as qiyeYuyueYesnoText
+        ,a.qiye_yuyue_shenhe_time as qiyeYuyueShenheTime
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.QiyeYuyueView" >
+        SELECT
+        <include refid="Base_Column_List" />
+        <!-- 级联表的字段 -->
+        ,qiye.qiye_name as qiyeName
+        ,qiye.qiye_phone as qiyePhone
+        ,qiye.qiye_photo as qiyePhoto
+        ,qiye.qiye_email as qiyeEmail
+
+        FROM qiye_yuyue  a
+        left JOIN qiye qiye ON a.qiye_id = qiye.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.qiyeYuyueUuidNumber != '' and params.qiyeYuyueUuidNumber != null and params.qiyeYuyueUuidNumber != 'null' ">
+                and a.qiye_yuyue_uuid_number like CONCAT('%',#{params.qiyeYuyueUuidNumber},'%')
+            </if>
+            <if test="params.qiyeId != null and params.qiyeId != ''">
+                and (
+                    a.qiye_id = #{params.qiyeId}
+                )
+            </if>
+            <if test=" params.qiyeYuyueText != '' and params.qiyeYuyueText != null and params.qiyeYuyueText != 'null' ">
+                and a.qiye_yuyue_text like CONCAT('%',#{params.qiyeYuyueText},'%')
+            </if>
+            <if test="params.qiyeYuyueYesnoTypes != null and params.qiyeYuyueYesnoTypes != ''">
+                and a.qiye_yuyue_yesno_types = #{params.qiyeYuyueYesnoTypes}
+            </if>
+            <if test=" params.qiyeYuyueYesnoText != '' and params.qiyeYuyueYesnoText != null and params.qiyeYuyueYesnoText != 'null' ">
+                and a.qiye_yuyue_yesno_text like CONCAT('%',#{params.qiyeYuyueYesnoText},'%')
+            </if>
+            <if test=" params.qiyeYuyueShenheTimeStart != '' and params.qiyeYuyueShenheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qiye_yuyue_shenhe_time) >= UNIX_TIMESTAMP(#{params.qiyeYuyueShenheTimeStart}) ]]>
+            </if>
+            <if test=" params.qiyeYuyueShenheTimeEnd != '' and params.qiyeYuyueShenheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.qiye_yuyue_shenhe_time) <= UNIX_TIMESTAMP(#{params.qiyeYuyueShenheTimeEnd}) ]]>
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断企业的id不为空 -->
+            <if test=" params.qiyeIdNotNull != '' and params.qiyeIdNotNull != null and params.qiyeIdNotNull != 'null' ">
+                and a.qiye_id IS NOT NULL
+            </if>
+            <if test=" params.qiyeName != '' and params.qiyeName != null and params.qiyeName != 'null' ">
+                and qiye.qiye_name like CONCAT('%',#{params.qiyeName},'%')
+            </if>
+            <if test=" params.qiyePhone != '' and params.qiyePhone != null and params.qiyePhone != 'null' ">
+                and qiye.qiye_phone like CONCAT('%',#{params.qiyePhone},'%')
+            </if>
+            <if test=" params.qiyeEmail != '' and params.qiyeEmail != null and params.qiyeEmail != 'null' ">
+                and qiye.qiye_email like CONCAT('%',#{params.qiyeEmail},'%')
+            </if>
+        </where>
+        order by a.${params.sort} ${params.order}
+    </select>
+
+</mapper>
